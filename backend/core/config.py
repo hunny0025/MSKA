@@ -67,7 +67,7 @@ class Settings(BaseSettings):
     jwt_refresh_token_expire_days: int = 7
 
     # --- AI Provider ---
-    ai_provider: str = "azure_openai"
+    ai_provider: str = "mock"
     azure_openai_api_key: str = ""
     azure_openai_endpoint: str = ""
     azure_openai_deployment_name: str = ""
