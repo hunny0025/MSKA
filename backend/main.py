@@ -108,5 +108,6 @@ async def health_check() -> dict:
         "status": "ok",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": "0.1.0",
+        "ai_provider": settings.ai_provider,
     }
 
