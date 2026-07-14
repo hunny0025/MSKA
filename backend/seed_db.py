@@ -59,7 +59,7 @@ async def seed_core_data():
             dept_obj = dept_res.scalar_one_or_none()
             if not dept_obj:
                 print(f"Seeding Department: {dept_name}...")
-                dept_obj = Department(name=dept_name, description=f"{dept_name} Department")
+                dept_obj = Department(name=dept_name, code=dept_name, description=f"{dept_name} Department")
                 session.add(dept_obj)
                 await session.flush()
             dept_ids[dept_name] = dept_obj.id
