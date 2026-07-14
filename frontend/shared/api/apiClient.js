@@ -15,7 +15,7 @@ const BASE_URL = localStorage.getItem('API_BASE_URL') ||
   window.API_BASE_URL || 
   ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://127.0.0.1:8000/api/v1' 
-    : '/api/v1');
+    : 'https://mska-ks8i.onrender.com/api/v1');
 
 
 
