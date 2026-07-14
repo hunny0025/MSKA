@@ -191,3 +191,59 @@ async def get_document_by_id(db: AsyncSession, doc_id: str) -> Document:
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
     return doc
+
+
+async def update_status(
+    db: AsyncSession,
+    document_id: str,
+    new_status,  # accepts DocumentStatus enum or plain str
+    message: str | None = None,
+    error: str | None = None,       # alias used by pipeline runner
+) -> Document:
+    """
+    Updates the status and message of a Document, and records the transition
+    in StatusHistory atomically.
+
+    Accepts either a DocumentStatus enum value or a plain string for
+    new_status so callers in the pipeline runner and legacy code are both
+    handled without changes.
+    """
+    from models.status_history import StatusHistory
+    from models.document import DocumentStatus
+
+    # Normalise enum → string value
+    if isinstance(new_status, DocumentStatus):
+        new_status_value = new_status.value
+    else:
+        new_status_value = str(new_status)
+
+    # `error` is an alias for `message` used by the pipeline runner
+    final_message = message or error
+
+    # 1. Fetch document
+    query = select(Document).where(Document.id == document_id)
+    result = await db.execute(query)
+    doc = result.scalar_one_or_none()
+    if not doc:
+        raise ValueError(f"Document with id {document_id} not found")
+
+    old_status = doc.status
+
+    # 2. Update document
+    doc.status = new_status_value
+    if final_message is not None:
+        doc.status_message = final_message
+
+    # 3. Insert status history record
+    history = StatusHistory(
+        document_id=document_id,
+        from_status=old_status,
+        to_status=new_status_value,
+        message=final_message,
+    )
+    db.add(history)
+    await db.flush()
+    await db.commit()   # commit so SSE readers see status immediately
+
+    return doc
+

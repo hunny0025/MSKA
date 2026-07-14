@@ -100,30 +100,36 @@ class DocumentsView extends HTMLElement {
         formData.append('department_id', project.department_id);
         formData.append('classification', classificationSelect.value);
         try {
-          const uploadUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://127.0.0.1:8000/api/v1/documents/'
-            : '/api/v1/documents/';
+          const token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token') || '';
+          const baseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://127.0.0.1:8000/api/v1'
+            : '/api/v1';
+
+          // Use the new A3 upload endpoint — returns 202 immediately, pipeline runs in background
+          const uploadUrl = `${baseUrl}/projects/${this.selectedProjectId}/documents`;
 
           const response = await fetch(uploadUrl, {
             method: 'POST',
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
             body: formData
           });
 
           if (!response.ok) {
-            const err = await response.json();
+            const err = await response.json().catch(() => ({ detail: response.statusText }));
             throw new Error(err.detail || 'Upload failed');
           }
 
           const doc = await response.json();
-          if (doc.status === 'quarantined') {
-            MsToast.show('PII pattern detected! File has been quarantined.', 'warning', 5000);
-          } else {
-            MsToast.show('Document uploaded and parsed successfully', 'success');
-          }
-          
+
+          // Show progress stepper if the ingestion-progress component is available
+          MsToast.show(`📤 "${fileInput.files[0].name}" uploading — processing in background`, 'success', 5000);
+
           dialog.close();
           uploadForm.reset();
-          this.loadDocuments();
+          // Reload after a short delay to show updated status
+          setTimeout(() => this.loadDocuments(), 2000);
         } catch (err) {
           MsToast.show(err.message || 'Ingestion failed', 'danger');
         } finally {
@@ -258,14 +264,26 @@ class DocumentsView extends HTMLElement {
           { key: 'version', label: 'Version' },
           { key: 'status_badge', label: 'Status' }
         ],
-        rows: this.documents.map(d => ({
-          filename: d.filename,
-          classification: d.classification.toUpperCase(),
-          version: `v${d.version}`,
-          status_badge: d.status === 'quarantined' 
-            ? '<ms-badge variant="danger">Quarantined (PII)</ms-badge>' 
-            : '<ms-badge variant="success">Approved</ms-badge>'
-        }))
+        rows: this.documents.map(d => {
+          const statusMap = {
+            uploaded:     ['info',    '📤 Uploaded'],
+            extracting:   ['warning', '🔍 Extracting'],
+            scanning_pii: ['warning', '🛡️ Scanning PII'],
+            chunking:     ['warning', '✂️ Chunking'],
+            embedding:    ['warning', '🧠 Embedding'],
+            indexing:     ['warning', '📑 Indexing'],
+            ready:        ['success', '✅ Ready'],
+            quarantined:  ['danger',  '⚠️ Quarantined (PII)'],
+            failed:       ['danger',  '❌ Failed'],
+          };
+          const [variant, label] = statusMap[d.status] || ['info', d.status];
+          return {
+            filename: d.filename,
+            classification: d.classification.toUpperCase(),
+            version: `v${d.version}`,
+            status_badge: `<ms-badge variant="${variant}">${label}</ms-badge>`,
+          };
+        })
       };
     }
   }

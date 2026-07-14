@@ -23,6 +23,9 @@ from api.v1.search import router as search_router
 from api.v1.analytics import router as analytics_router
 from api.v1.notifications import router as notifications_router
 from api.v1.admin import router as admin_router
+from api.v1.ingestion import router as ingestion_router
+from api.v1.trace import router as trace_router
+from api.v1.explorer import router as explorer_router
 
 logger = get_logger(__name__)
 
@@ -35,8 +38,17 @@ async def lifespan(application: FastAPI):
         "Starting %s (env=%s, debug=%s)",
         settings.app_name, settings.app_env, settings.app_debug,
     )
+    
+    # Initialize database tables (Alembic-free startup creation)
+    from core.database import engine
+    from core.init_db import init_tables
+    logger.info("Initializing database tables...")
+    await init_tables(engine)
+    logger.info("Database tables initialized successfully.")
+    
     yield
     logger.info("Shutting down %s", settings.app_name)
+
 
 
 settings = get_settings()
@@ -61,6 +73,9 @@ app.include_router(auth_router, prefix="/api/v1")
 app.include_router(departments_router, prefix="/api/v1")
 app.include_router(projects_router, prefix="/api/v1")
 app.include_router(documents_router, prefix="/api/v1")
+app.include_router(ingestion_router, prefix="/api/v1")  # A3 – upload + SSE progress
+app.include_router(trace_router, prefix="/api/v1")       # C1 – retrieval trace
+app.include_router(explorer_router, prefix="/api/v1")    # D1 – document explorer
 app.include_router(chat_router, prefix="/api/v1")
 app.include_router(search_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1")

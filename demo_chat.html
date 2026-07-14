@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maruti Suzuki Knowledge Assistant — Chat Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0f1117;
+      --bg-secondary: #1a1d27;
+      --bg-tertiary: #242836;
+      --bg-card: #1e2230;
+      --text-primary: #e8eaed;
+      --text-secondary: #9aa0b0;
+      --text-muted: #6b7280;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-glow: rgba(59, 130, 246, 0.15);
+      --success: #22c55e;
+      --success-bg: rgba(34, 197, 94, 0.1);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.1);
+      --danger: #ef4444;
+      --border: #2d3348;
+      --border-light: #3a4060;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-full: 9999px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.3);
+      --transition: 0.2s ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Header ─── */
+    header {
+      background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    .logo-mark {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 18px; color: white;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+
+    header h1 {
+      font-size: 18px; font-weight: 600;
+      background: linear-gradient(90deg, var(--text-primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    header .subtitle {
+      font-size: 12px; color: var(--text-muted); margin-top: 2px;
+    }
+
+    .demo-badge {
+      margin-left: auto;
+      background: var(--accent-glow);
+      color: var(--accent);
+      padding: 4px 14px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    /* ─── Main Layout ─── */
+    .app-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ─── Sidebar ─── */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 0 8px;
+    }
+
+    .project-selector {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      width: 100%;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239aa0b0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+
+    .question-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .q-item {
+      padding: 10px 12px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition);
+      line-height: 1.4;
+      border: 1px solid transparent;
+    }
+
+    .q-item:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border-color: var(--border);
+    }
+
+    .q-item.active {
+      background: var(--accent-glow);
+      color: var(--accent);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .q-item .q-num {
+      font-weight: 600;
+      color: var(--accent);
+      margin-right: 6px;
+      font-size: 11px;
+    }
+
+    .q-item .q-dept {
+      display: block;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ─── Chat Area ─── */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ─── Welcome State ─── */
+    .welcome-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 40px;
+    }
+
+    .welcome-icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15));
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .welcome-state h2 {
+      font-size: 22px;
+      font-weight: 600;
+      background: linear-gradient(90deg, var(--text-primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .welcome-state p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      max-width: 400px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .suggestion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      max-width: 720px;
+      width: 100%;
+    }
+
+    .suggestion-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all var(--transition);
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .suggestion-card:hover {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+      color: var(--text-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+    }
+
+    .suggestion-card .sc-dept {
+      font-size: 10px;
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    /* ─── Message Bubbles ─── */
+    .msg {
+      max-width: 85%;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg.user {
+      align-self: flex-end;
+    }
+
+    .msg.user .msg-bubble {
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      color: white;
+      border-radius: var(--radius) var(--radius) 4px var(--radius);
+      padding: 14px 18px;
+      font-size: 14px;
+      line-height: 1.5;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+    }
+
+    .msg.assistant {
+      align-self: flex-start;
+    }
+
+    .msg.assistant .msg-bubble {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) var(--radius) 4px;
+      padding: 18px 22px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .msg-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .msg.user .msg-label { text-align: right; }
+
+    /* ─── Answer Sections ─── */
+    .answer-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .answer-section h4 {
+      font-size: 12px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .answer-section ul {
+      padding-left: 20px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .answer-section ul li::marker {
+      color: var(--accent);
+    }
+
+    /* ─── Metadata Footer ─── */
+    .msg-meta {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .confidence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .confidence-badge.high {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .confidence-badge.medium {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .source-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-tertiary);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+    }
+
+    .source-tag strong { color: var(--text-secondary); }
+
+    /* ─── Input Bar ─── */
+    .input-bar {
+      padding: 16px 40px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .input-bar form {
+      display: flex;
+      gap: 10px;
+    }
+
+    .input-bar input {
+      flex: 1;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 18px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color var(--transition);
+    }
+
+    .input-bar input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      font-family: inherit;
+    }
+
+    .send-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    }
+
+    /* ─── Typing Indicator ─── */
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      padding: 14px 22px;
+      align-items: center;
+    }
+
+    .typing-indicator span {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-8px); opacity: 1; }
+    }
+
+    /* ─── Scrollbar ─── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Header ─── -->
+  <header>
+    <div class="logo-mark">M</div>
+    <div>
+      <h1>Maruti Suzuki Knowledge Assistant</h1>
+      <div class="subtitle">RAG-Powered Enterprise Chat</div>
+    </div>
+    <div class="demo-badge">● Live Demo</div>
+  </header>
+
+  <!-- ─── Main Layout ─── -->
+  <div class="app-layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-title">Project Context</div>
+      <select class="project-selector" id="projectSelect">
+        <option value="all">All Projects</option>
+        <option value="qa">QA Welding Procedures</option>
+        <option value="eng">K15C Engine Development</option>
+        <option value="safety">Plant Floor Safety</option>
+        <option value="supply">Production Supplier Audits</option>
+        <option value="hr">HR Records Management</option>
+      </select>
+
+      <div class="sidebar-title" style="margin-top:12px;">Suggested Questions</div>
+      <div class="question-list" id="questionList"></div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area">
+      <div class="chat-messages" id="chatMessages">
+        <!-- Welcome state rendered by JS -->
+      </div>
+
+      <div class="input-bar">
+        <form id="chatForm">
+          <input type="text" id="chatInput" placeholder="Ask about production guidelines, SOPs, engine specs..." autocomplete="off" />
+          <button type="submit" class="send-btn">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// Q&A Database — 15 Questions with Full Answers
+// ═══════════════════════════════════════════════════════════════════
+const QA_DATABASE = [
+  {
+    id: 1,
+    dept: "QA",
+    project: "qa",
+    question: "How do I calibrate the Fanuc R-2000iC welding robot on Line 4?",
+    answer: `The calibration procedure for the Fanuc R-2000iC welding robots on Body Shop Line 4 (stations WS-401 through WS-412) is defined in SOP QA-WR-2024-003, Revision 3.1.\n\n<div class="answer-section"><h4>Calibration Steps</h4><ul><li><strong>Step 1:</strong> Power down the controller via the main disconnect switch.</li><li><strong>Step 2:</strong> Attach the Renishaw Ballbar QC20-W to the robot flange.</li><li><strong>Step 3:</strong> Run the automated calibration cycle (Program CAL_LINE4_V3).</li><li><strong>Step 4:</strong> Record deviation values in the MES system under ticket WR-CAL.</li><li><strong>Step 5:</strong> If deviation exceeds ±0.15mm, escalate to Maintenance Lead.</li></ul></div><div class="answer-section"><h4>Acceptance Criteria</h4><ul><li>All six axes must read within ±0.10mm of nominal.</li><li>TCP (Tool Center Point) drift must not exceed 0.05mm over 8 hours.</li></ul></div>`,
+    confidence: 0.96,
+    source: "sop_welding_robot.txt",
+    classification: "Internal"
+  },
+  {
+    id: 2,
+    dept: "QA",
+    project: "qa",
+    question: "What safety precautions must I follow before entering the robot cell?",
+    answer: `Per SOP QA-WR-2024-003, the following safety precautions are <strong>mandatory</strong> before entering any welding robot cell on Line 4:\n\n<div class="answer-section"><h4>Required Safety Measures</h4><ul><li><strong>LOTO:</strong> Engage Lock Out / Tag Out before entering the robot cell.</li><li><strong>PPE:</strong> Wear heat-resistant gloves, face shield, and steel-toe boots.</li><li><strong>E-Stop Test:</strong> Verify teach pendant Emergency Stop functionality before power-on.</li><li>Never enter the cell alone — a spotter must be present at the cell gate.</li></ul></div>`,
+    confidence: 0.94,
+    source: "sop_welding_robot.txt",
+    classification: "Internal"
+  },
+  {
+    id: 3,
+    dept: "QA",
+    project: "qa",
+    question: "What is the acceptable TCP drift limit for welding robots?",
+    answer: `According to SOP QA-WR-2024-003 Section 5 (Acceptance Criteria), the TCP (Tool Center Point) drift must <strong>not exceed 0.05mm over 8 hours</strong> of continuous operation.\n\nAdditionally, all six axes must read within <strong>±0.10mm of nominal</strong> after calibration.\n\nIf deviation exceeds ±0.15mm during the calibration cycle, an immediate escalation to the Maintenance Lead is required.`,
+    confidence: 0.95,
+    source: "sop_welding_robot.txt",
+    classification: "Internal"
+  },
+  {
+    id: 4,
+    dept: "Engineering",
+    project: "eng",
+    question: "What is the compression ratio of the K15C Smart Hybrid engine?",
+    answer: `The K15C 1.5L Dual VVT Smart Hybrid engine has a <strong>compression ratio of 12.5:1</strong>.\n\n<div class="answer-section"><h4>Key Specifications</h4><ul><li><strong>Displacement:</strong> 1462 cc</li><li><strong>Bore × Stroke:</strong> 74.0 mm × 85.0 mm</li><li><strong>Power:</strong> 103 PS at 6000 rpm</li><li><strong>Torque:</strong> 138 Nm at 4400 rpm</li><li><strong>Fuel System:</strong> Multi-point Fuel Injection (MPFI)</li><li><strong>Emission Standard:</strong> BS-VI Phase 2</li></ul></div>`,
+    confidence: 0.97,
+    source: "engine_spec_v2.pdf",
+    classification: "Restricted"
+  },
+  {
+    id: 5,
+    dept: "Engineering",
+    project: "eng",
+    question: "What proprietary coating process is used for the K15C cylinder bore?",
+    answer: `The K15C engine's cylinder bore uses <strong>Plasma-Transferred Wire-Arc (PTWA) coating</strong> — this is a proprietary Suzuki process with restricted distribution.\n\n<div class="answer-section"><h4>Trade Secret Details</h4><ul><li><strong>Coating type:</strong> Plasma-Transferred Wire-Arc (PTWA)</li><li><strong>Thickness tolerance:</strong> 150 ± 5 microns (TRADE SECRET)</li><li><strong>Distribution:</strong> Restricted — Engineering department only</li></ul></div>\n\n⚠️ <em>This information is classified as RESTRICTED — TRADE SECRET. Do not share outside authorized Engineering personnel.</em>`,
+    confidence: 0.92,
+    source: "engine_spec_v2.pdf",
+    classification: "Restricted"
+  },
+  {
+    id: 6,
+    dept: "Engineering",
+    project: "eng",
+    question: "What are the smart hybrid features of the K15C engine?",
+    answer: `The K15C 1.5L Dual VVT engine is equipped with an <strong>Integrated Starter Generator (ISG)</strong> that enables the following smart hybrid features:\n\n<div class="answer-section"><h4>Smart Hybrid System Capabilities</h4><ul><li><strong>Torque Assist:</strong> Electric motor supplements the petrol engine during acceleration.</li><li><strong>Regenerative Braking:</strong> Kinetic energy is captured during deceleration and stored in the lithium-ion battery.</li><li><strong>Idle Start-Stop:</strong> Engine automatically shuts off at idle and restarts seamlessly when the clutch is engaged.</li></ul></div>`,
+    confidence: 0.93,
+    source: "engine_spec_v2.pdf",
+    classification: "Restricted"
+  },
+  {
+    id: 7,
+    dept: "Safety",
+    project: "safety",
+    question: "What PPE is mandatory on the production shop floor?",
+    answer: `All employees must wear the following Personal Protective Equipment (PPE) before entering the shop floor:\n\n<div class="answer-section"><h4>Mandatory PPE by Zone</h4><ul><li><strong>All production zones:</strong> Hard hat (mandatory)</li><li><strong>Near grinding/welding:</strong> Safety goggles (mandatory)</li><li><strong>Everywhere:</strong> Steel-toe boots (mandatory)</li><li><strong>Logistics zones:</strong> High-visibility vest (mandatory)</li></ul></div>\n\nAll new employees must complete the Plant Floor Safety Training orientation before their first day on the shop floor.`,
+    confidence: 0.95,
+    source: "safety_training_deck.pptx",
+    classification: "Public"
+  },
+  {
+    id: 8,
+    dept: "Safety",
+    project: "safety",
+    question: "What do I do in case of a chemical spill or injury on the plant floor?",
+    answer: `The emergency procedures for the Maruti Suzuki plant floor are as follows:\n\n<div class="answer-section"><h4>Emergency Response Procedures</h4><ul><li><strong>Fire Alarm:</strong> Evacuate immediately via the nearest green exit sign. Do not use elevators.</li><li><strong>Chemical Spill:</strong> Call the EHS (Environment, Health & Safety) hotline at <strong>1800-XXX-XXXX</strong> immediately. Do not attempt to clean up without hazmat training.</li><li><strong>Injury:</strong> Report to the nearest first-aid station. All injuries must be documented within 15 minutes.</li></ul></div>`,
+    confidence: 0.94,
+    source: "safety_training_deck.pptx",
+    classification: "Public"
+  },
+  {
+    id: 9,
+    dept: "Safety",
+    project: "safety",
+    question: "What are the 5S housekeeping principles followed at the plant?",
+    answer: `Maruti Suzuki follows the 5S Housekeeping methodology across all plant facilities:\n\n<div class="answer-section"><h4>5S Principles</h4><ul><li><strong>Sort (Seiri):</strong> Remove unnecessary items from the workspace.</li><li><strong>Set in Order (Seiton):</strong> Organize remaining items for easy access.</li><li><strong>Shine (Seiso):</strong> Clean the workspace and equipment regularly.</li><li><strong>Standardize (Seiketsu):</strong> Create consistent processes and visual management.</li><li><strong>Sustain (Shitsuke):</strong> Maintain discipline and audit regularly.</li></ul></div>\n\n<strong>Key Rule:</strong> Keep walkways clear at all times. No tools left on the floor.`,
+    confidence: 0.93,
+    source: "safety_training_deck.pptx",
+    classification: "Public"
+  },
+  {
+    id: 10,
+    dept: "Supply Chain",
+    project: "supply",
+    question: "What is the defect rate for Sona BLW gears?",
+    answer: `According to the latest Supplier Audit Report (July 2024), <strong>Sona BLW</strong> has the following quality metrics:\n\n<div class="answer-section"><h4>Audit Results</h4><ul><li><strong>Part Number:</strong> SB-GEAR-9901</li><li><strong>Defect Rate:</strong> 0.03%</li><li><strong>Audit Date:</strong> 2024-07-01</li><li><strong>Rating:</strong> ✅ Excellent — well below the 0.5% threshold</li></ul></div>\n\nSona BLW has the <strong>lowest defect rate</strong> among all audited suppliers.`,
+    confidence: 0.91,
+    source: "supplier_audit_report.csv",
+    classification: "Confidential"
+  },
+  {
+    id: 11,
+    dept: "Supply Chain",
+    project: "supply",
+    question: "Which supplier has the highest defect rate?",
+    answer: `According to the Supplier Audit Report, <strong>Lumax Auto</strong> has the highest defect rate among the audited suppliers:\n\n<div class="answer-section"><h4>Full Supplier Defect Rankings</h4><ul><li>🔴 <strong>Lumax Auto (LA-LAMP-5520):</strong> 1.20% — Audit: 2024-07-05</li><li>🟡 <strong>Rico Auto (RA-DIE-4402):</strong> 0.67% — Audit: 2024-07-12</li><li>🟡 <strong>Minda Industries (MI-HDL-3305):</strong> 0.45% — Audit: 2024-06-18</li><li>🟢 <strong>Bharat Forge (BF-CRK-7721):</strong> 0.12% — Audit: 2024-06-15</li><li>🟢 <strong>Subros Ltd (SUB-AC-8810):</strong> 0.08% — Audit: 2024-07-10</li><li>🟢 <strong>Sona BLW (SB-GEAR-9901):</strong> 0.03% — Audit: 2024-07-01</li></ul></div>\n\n⚠️ Lumax Auto exceeds the 1.0% defect threshold. Corrective action recommended.`,
+    confidence: 0.89,
+    source: "supplier_audit_report.csv",
+    classification: "Confidential"
+  },
+  {
+    id: 12,
+    dept: "Supply Chain",
+    project: "supply",
+    question: "Show all supplier quality audit results for 2024.",
+    answer: `Here is the complete supplier quality audit data from the 2024 audit cycle:\n\n<div class="answer-section"><h4>Supplier Audit Summary (2024)</h4><table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;"><tr style="border-bottom:1px solid var(--border);text-align:left;"><th style="padding:8px;color:var(--accent);">Supplier</th><th style="padding:8px;color:var(--accent);">Part #</th><th style="padding:8px;color:var(--accent);">Defect %</th><th style="padding:8px;color:var(--accent);">Date</th></tr><tr style="border-bottom:1px solid var(--border);"><td style="padding:8px;">Bharat Forge</td><td style="padding:8px;">BF-CRK-7721</td><td style="padding:8px;">0.12%</td><td style="padding:8px;">2024-06-15</td></tr><tr style="border-bottom:1px solid var(--border);"><td style="padding:8px;">Minda Industries</td><td style="padding:8px;">MI-HDL-3305</td><td style="padding:8px;">0.45%</td><td style="padding:8px;">2024-06-18</td></tr><tr style="border-bottom:1px solid var(--border);"><td style="padding:8px;">Sona BLW</td><td style="padding:8px;">SB-GEAR-9901</td><td style="padding:8px;">0.03%</td><td style="padding:8px;">2024-07-01</td></tr><tr style="border-bottom:1px solid var(--border);"><td style="padding:8px;">Lumax Auto</td><td style="padding:8px;">LA-LAMP-5520</td><td style="padding:8px;color:var(--danger);font-weight:600;">1.20%</td><td style="padding:8px;">2024-07-05</td></tr><tr style="border-bottom:1px solid var(--border);"><td style="padding:8px;">Subros Ltd</td><td style="padding:8px;">SUB-AC-8810</td><td style="padding:8px;">0.08%</td><td style="padding:8px;">2024-07-10</td></tr><tr><td style="padding:8px;">Rico Auto</td><td style="padding:8px;">RA-DIE-4402</td><td style="padding:8px;">0.67%</td><td style="padding:8px;">2024-07-12</td></tr></table></div>\n\n📊 Distribution restricted to Production and QA leads only.`,
+    confidence: 0.90,
+    source: "supplier_audit_report.csv",
+    classification: "Confidential"
+  },
+  {
+    id: 13,
+    dept: "HR",
+    project: "hr",
+    question: "Show Rajesh Kumar's employee details.",
+    answer: `⚠️ <strong>Access Denied — PII Quarantine Active</strong>\n\nThe HR Employee Roster document has been <strong>quarantined</strong> by the automated PII scanner. The system detected the following personally identifiable information:\n\n<div class="answer-section"><h4>PII Detected</h4><ul><li>Aadhaar Numbers</li><li>PAN Card Numbers</li><li>Personal Phone Numbers</li><li>Salary / CTC Information</li></ul></div>\n\nThis document cannot be accessed through the Knowledge Assistant until a platform administrator reviews and approves it through the PII remediation workflow.\n\n<em>This demonstrates the system's PII protection guardrail in action.</em>`,
+    confidence: 0.0,
+    source: "hr_employee_roster.docx (QUARANTINED)",
+    classification: "Confidential"
+  },
+  {
+    id: 14,
+    dept: "QA",
+    project: "qa",
+    question: "What is a good recipe for Butter Chicken?",
+    answer: `I do not have enough verified information relevant to your project context to answer this question.\n\nThe knowledge base contains a document about Butter Chicken recipes, but it has been flagged as <strong>irrelevant content</strong> — it has no relation to automotive manufacturing, quality assurance, or any Maruti Suzuki operational domain.\n\n<em>This demonstrates the system's <strong>abstention guardrail</strong> — the assistant refuses to answer queries that fall outside the scope of the ingested knowledge base, even when loosely related content exists.</em>`,
+    confidence: 0.12,
+    source: "random_recipe.xlsx (IRRELEVANT)",
+    classification: "Internal"
+  },
+  {
+    id: 15,
+    dept: "QA",
+    project: "qa",
+    question: "Where are calibration certificates stored?",
+    answer: `According to SOP QA-WR-2024-003, Section 6 (Records):\n\nCalibration certificates are stored in the <strong>QMS (Quality Management System) portal</strong> under:\n\n<div class="answer-section"><h4>Storage Location</h4><ul><li><strong>Path:</strong> QMS Portal → Documents → Welding</li><li><strong>Access:</strong> Available to QA department personnel with internal clearance</li><li><strong>Format:</strong> Digital certificates linked to MES ticket WR-CAL</li></ul></div>`,
+    confidence: 0.91,
+    source: "sop_welding_robot.txt",
+    classification: "Internal"
+  }
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// App State
+// ═══════════════════════════════════════════════════════════════════
+let currentFilter = 'all';
+let chatHistory = [];
+let activeQuestionId = null;
+
+const chatMessages = document.getElementById('chatMessages');
+const questionList = document.getElementById('questionList');
+const chatForm = document.getElementById('chatForm');
+const chatInput = document.getElementById('chatInput');
+const projectSelect = document.getElementById('projectSelect');
+
+// ═══════════════════════════════════════════════════════════════════
+// Render
+// ═══════════════════════════════════════════════════════════════════
+function getFilteredQA() {
+  if (currentFilter === 'all') return QA_DATABASE;
+  return QA_DATABASE.filter(q => q.project === currentFilter);
+}
+
+function renderSidebar() {
+  const items = getFilteredQA();
+  questionList.innerHTML = items.map(q => `
+    <div class="q-item ${q.id === activeQuestionId ? 'active' : ''}" data-id="${q.id}">
+      <span class="q-num">Q${q.id}</span>${q.question}
+      <span class="q-dept">${q.dept}</span>
+    </div>
+  `).join('');
+
+  questionList.querySelectorAll('.q-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = parseInt(el.dataset.id);
+      askQuestion(id);
+    });
+  });
+}
+
+function renderWelcome() {
+  const sample = getFilteredQA().slice(0, 6);
+  chatMessages.innerHTML = `
+    <div class="welcome-state">
+      <div class="welcome-icon">🤖</div>
+      <h2>Ask Maruti Suzuki Knowledge Assistant</h2>
+      <p>Ask natural-language questions about SOPs, engine specifications, supplier audits, safety protocols, and more.</p>
+      <div class="suggestion-grid">
+        ${sample.map(q => `
+          <div class="suggestion-card" data-id="${q.id}">
+            <div class="sc-dept">${q.dept}</div>
+            ${q.question}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  chatMessages.querySelectorAll('.suggestion-card').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = parseInt(el.dataset.id);
+      askQuestion(id);
+    });
+  });
+}
+
+function renderMessages() {
+  if (chatHistory.length === 0) {
+    renderWelcome();
+    return;
+  }
+
+  chatMessages.innerHTML = chatHistory.map(entry => {
+    const confClass = entry.confidence >= 0.8 ? 'high' : 'medium';
+    const confLabel = entry.confidence >= 0.8 ? '✓ High' : entry.confidence >= 0.5 ? '⚠ Medium' : '✗ Low';
+    const confPct = (entry.confidence * 100).toFixed(0);
+
+    return `
+      <div class="msg user">
+        <div class="msg-label">You</div>
+        <div class="msg-bubble">${entry.question}</div>
+      </div>
+      <div class="msg assistant">
+        <div class="msg-label">Knowledge Assistant</div>
+        <div class="msg-bubble">
+          ${entry.answer}
+          <div class="msg-meta">
+            <span class="confidence-badge ${confClass}">${confLabel} ${confPct}%</span>
+            <span class="source-tag"><strong>Source:</strong> ${entry.source}</span>
+            <span class="source-tag"><strong>Classification:</strong> ${entry.classification}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Ask Question
+// ═══════════════════════════════════════════════════════════════════
+function askQuestion(id) {
+  const qa = QA_DATABASE.find(q => q.id === id);
+  if (!qa) return;
+
+  activeQuestionId = id;
+  renderSidebar();
+
+  // Add user message immediately
+  chatHistory.push({
+    question: qa.question,
+    answer: '',
+    confidence: qa.confidence,
+    source: qa.source,
+    classification: qa.classification
+  });
+
+  // Show typing indicator
+  chatMessages.innerHTML += `
+    <div class="msg user" style="animation:slideIn 0.3s ease;">
+      <div class="msg-label">You</div>
+      <div class="msg-bubble">${qa.question}</div>
+    </div>
+    <div class="msg assistant" id="typing-msg" style="animation:slideIn 0.3s ease;">
+      <div class="msg-label">Knowledge Assistant</div>
+      <div class="msg-bubble">
+        <div class="typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  `;
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  // Simulate AI processing delay (800ms–1500ms)
+  const delay = 800 + Math.random() * 700;
+  setTimeout(() => {
+    chatHistory[chatHistory.length - 1].answer = qa.answer;
+    renderMessages();
+  }, delay);
+}
+
+function askFreeText(text) {
+  // Try to match to a known question
+  const lower = text.toLowerCase();
+  const match = QA_DATABASE.find(q => {
+    const words = lower.split(/\s+/).filter(w => w.length > 3);
+    const qWords = q.question.toLowerCase();
+    const hits = words.filter(w => qWords.includes(w));
+    return hits.length >= 2;
+  });
+
+  if (match) {
+    askQuestion(match.id);
+  } else {
+    // Fallback for unmatched queries
+    chatHistory.push({
+      question: text,
+      answer: '',
+      confidence: 0,
+      source: 'N/A',
+      classification: 'N/A'
+    });
+
+    chatMessages.innerHTML += `
+      <div class="msg user" style="animation:slideIn 0.3s ease;">
+        <div class="msg-label">You</div>
+        <div class="msg-bubble">${text}</div>
+      </div>
+      <div class="msg assistant" id="typing-msg" style="animation:slideIn 0.3s ease;">
+        <div class="msg-label">Knowledge Assistant</div>
+        <div class="msg-bubble">
+          <div class="typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    `;
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    setTimeout(() => {
+      chatHistory[chatHistory.length - 1].answer = `I do not have enough verified information in my knowledge base to answer: "<em>${text}</em>".\n\nPlease try one of the suggested questions from the sidebar, or rephrase your query to match the ingested documentation scope.`;
+      renderMessages();
+    }, 1000);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Event Listeners
+// ═══════════════════════════════════════════════════════════════════
+projectSelect.addEventListener('change', (e) => {
+  currentFilter = e.target.value;
+  renderSidebar();
+  if (chatHistory.length === 0) renderWelcome();
+});
+
+chatForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = chatInput.value.trim();
+  if (!text) return;
+  chatInput.value = '';
+  askFreeText(text);
+});
+
+// ─── Initial Render ───
+renderSidebar();
+renderWelcome();
+</script>
+
+</body>
+</html>

@@ -108,7 +108,7 @@ class DashboardView extends HTMLElement {
           margin-bottom: var(--ms-space-5);
         }
 
-        .car-image-container {
+        .logo-image-container {
           width: 100%;
           max-width: 320px;
           border-radius: var(--ms-radius-xl);
@@ -118,11 +118,11 @@ class DashboardView extends HTMLElement {
           transition: transform var(--ms-transition-normal);
         }
 
-        .car-image-container:hover {
+        .logo-image-container:hover {
           transform: scale(1.04) rotate(1deg);
         }
 
-        .car-image {
+        .logo-image {
           width: 100%;
           display: block;
           object-fit: cover;
@@ -201,8 +201,8 @@ class DashboardView extends HTMLElement {
             </div>
           </div>
           <div class="hero-right">
-            <div class="car-image-container">
-              <img class="car-image" src="/assets/maruti_concept_ev.png" alt="Maruti Suzuki Concept EV">
+            <div class="logo-image-container">
+              <img class="logo-image" src="/assets/logo.png" alt="Maruti Suzuki Logo">
             </div>
           </div>
         </div>

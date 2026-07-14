@@ -10,3 +10,6 @@ from models.audit import AuditLog
 from models.chat import ChatSession, ChatMessage, BookmarkedMessage
 from models.notification import Notification
 from models.feedback import Feedback
+from models.chunk import Chunk
+from models.status_history import StatusHistory
+
