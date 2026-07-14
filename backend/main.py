@@ -46,6 +46,12 @@ async def lifespan(application: FastAPI):
     await init_tables(engine)
     logger.info("Database tables initialized successfully.")
     
+    # Seed core data (automatic setup for deployments)
+    from seed_db import seed_core_data
+    logger.info("Auto-seeding database core tables...")
+    await seed_core_data()
+    logger.info("Database auto-seeding completed.")
+    
     yield
     logger.info("Shutting down %s", settings.app_name)
 
