@@ -288,16 +288,16 @@ class MockAIProvider(BaseAIProvider):
         context_chunks: List[Dict[str, Any]],
         system_instruction: str | None = None
     ) -> str:
+        # 1. Try template match first (even if context_chunks is empty)
+        template_answer = self._match_template(query)
+        if template_answer:
+            return template_answer
+
         if not context_chunks:
             return (
                 "I have no relevant context in the knowledge base to answer this question. "
                 "Please make sure the relevant documents are ingested with correct permissions."
             )
-
-        # 1. Try template match first
-        template_answer = self._match_template(query)
-        if template_answer:
-            return template_answer
 
         # 2. Try smart extraction from chunks
         smart_answer = self._extract_smart_answer(query, context_chunks)
