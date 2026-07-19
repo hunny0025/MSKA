@@ -171,23 +171,39 @@ chatForm.addEventListener("submit", (e) => {
 
 // Load suggested questions as chips
 async function loadSuggestions() {
+  const FALLBACK_SUGGESTIONS = [
+    "What is the warranty period for a new Maruti car?",
+    "How do I book a service appointment?",
+    "Can I get roadside assistance?",
+    "What is Suzuki Smart Hybrid technology?"
+  ];
+
+  function renderChips(questions) {
+    if (!suggestionsBox) return;
+    suggestionsBox.innerHTML = '';
+    questions.forEach((q) => {
+      const chip = document.createElement("div");
+      chip.classList.add("chip");
+      chip.textContent = q;
+      chip.addEventListener("click", () => sendQuery(q));
+      suggestionsBox.appendChild(chip);
+    });
+  }
+
+  // Pre-populate immediately so the UI is not empty
+  renderChips(FALLBACK_SUGGESTIONS);
+
   try {
     const res = await fetch(`${API_BASE}/faqs`);
+    if (!res.ok) throw new Error("API response not ok");
     const data = await res.json();
-    const sample = data.faqs.slice(0, 4); // Show first 4 as quick suggestions
-    
-    if (suggestionsBox) {
-      suggestionsBox.innerHTML = '';
-      sample.forEach((q) => {
-        const chip = document.createElement("div");
-        chip.classList.add("chip");
-        chip.textContent = q;
-        chip.addEventListener("click", () => sendQuery(q));
-        suggestionsBox.appendChild(chip);
-      });
+    if (data && data.faqs && data.faqs.length > 0) {
+      const sample = data.faqs.slice(0, 4); // Show first 4 as quick suggestions
+      renderChips(sample);
     }
   } catch (err) {
-    // Backend not reachable yet - silently retry or skip suggestions
+    console.warn("Could not load suggestions from API. Using local fallbacks.", err);
+    // Fallback suggestions are already rendered and will remain visible
   }
 }
 
